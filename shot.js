@@ -25,11 +25,46 @@ const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 const FIN_LIMIT = 8;      // 财经条数
+const CRYPTO_LIMIT = 8;   // 币圈条数
+const MIL_LIMIT = 8;      // 国际军事 / 地缘条数
 const TECH_ITHOME = 8;    // 「AI·科技」：IT之家（半导体/机器人/算力）
 const TECH_QBT = 6;       // 「AI 圈大事」：量子位原创报道
 const TECH_IFANR = 3;     // 「AI 圈大事」：爱范儿补充
 const GLOBAL_LIMIT = 8;   // 海外 AI 动态
 const GH_LIMIT = 10;      // 本周热门开源项目
+
+// 综合类国际源会混进大量非军事内容，靠关键词筛
+const MIL_KEY =
+  /(military|defen[cs]e|army|navy|air ?force|troop|missile|warship|drone|nuclear|weapon|naval|combat|conflict|ceasefire|sanction|NATO|Pentagon|artillery|soldier|frontline|offensive|airstrike|battle|submarine|fighter ?jet|arms deal|war)/i;
+// Decrypt 这类综合源会混进科技/商业新闻，只留币圈相关
+const CRYPTO_KEY =
+  /(bitcoin|btc|ethereum|ether\b|eth\b|crypto|stablecoin|blockchain|defi|nft|web3|solana|binance|coinbase|etf|wallet|mining|altcoin|usdt|usdc|xrp|doge|airdrop|smart contract|on-?chain|dex\b|tether|ripple|tokeniz|digital asset|custody)/i;
+
+// 通讯社 / 媒体名统一成中文
+const SRC_ZH = [
+  [/reuters/i, '路透社'],
+  [/bloomberg/i, '彭博社'],
+  [/associated press|\bap\b/i, '美联社'],
+  [/financial times/i, '金融时报'],
+  [/wall street journal|wsj/i, '华尔街日报'],
+  [/new york times/i, '纽约时报'],
+  [/the guardian/i, '卫报'],
+  [/al jazeera/i, '半岛电视台'],
+  [/defense news/i, '防务新闻'],
+  [/the war zone|\btwz\b/i, '战区'],
+  [/breaking defense/i, '防务快报'],
+  [/bbc/i, 'BBC'],
+  [/cnbc/i, 'CNBC'],
+  [/the block/i, 'The Block'],
+  [/cointelegraph/i, 'Cointelegraph'],
+  [/decrypt/i, 'Decrypt'],
+  [/coindesk/i, 'CoinDesk'],
+];
+
+function srcZh(s) {
+  for (const [re, to] of SRC_ZH) if (re.test(s || '')) return to;
+  return '';
+}
 
 // IT之家 里挑跟半导体 / 机器人 / 算力相关的
 const TECH_KEY =
@@ -192,6 +227,8 @@ const TERM_FIX = [
 // 译文排版清理：去掉中文标点两侧空格、统一逗号、修掉「$ T」这类金额畸形
 function tidyZh(s) {
   let out = s
+    // 千分位逗号先藏起来，否则会被下面的「逗号转中文」改成 80，000
+    .replace(/(\d),(?=\d{3}\b)/g, '$1\u0000')
     .replace(/\$\s*T\b/gi, '万亿美元')
     .replace(/\$\s*B\b/gi, '亿美元')
     .replace(/(\d)\s+(万亿|亿美元)/g, '$1$2')
@@ -199,12 +236,57 @@ function tidyZh(s) {
     .replace(/\s*([，。、：；！？（）《》])\s*/g, '$1')
     .replace(/([，。、：；！？])\1+/g, '$1')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .replace(/\u0000/g, ',');
   for (const [re, to] of TERM_FIX) out = out.replace(re, to);
   // 翻译接口常在中文后面拖一段没译完的英文，长度不大就整段剪掉
   out = out.replace(/\s+[A-Za-z][A-Za-z0-9\s\-.'’&,]{5,20}$/, '');
   // 源站标题自带被截断的「......」，统一成单个省略号
   return out.replace(/(?:\.{2,}|…+)\s*$/, '…').trim();
+}
+
+// 金额处理：翻译前把「$404 million」换成占位符 ⟦0⟧，译完再填回中文
+// 直接喂给翻译器会被拆成「4.04 $」，或和中文单位错位成「损失万美元1600」
+function moneyToZh(num, unit) {
+  const mult = !unit
+    ? 1
+    : /^t/i.test(unit)
+      ? 1e12
+      : /^b/i.test(unit)
+        ? 1e9
+        : 1e6;
+  const v = parseFloat(String(num).replace(/,/g, '')) * mult;
+  const fix = (x, d) => x.toFixed(d).replace(/\.?0+$/, '');
+  if (v >= 1e12) return fix(v / 1e12, 2) + '万亿美元';
+  if (v >= 1e8) return fix(v / 1e8, 2) + '亿美元';
+  if (v >= 1e4) return fix(v / 1e4, 1) + '万美元';
+  return Math.round(v) + '美元';
+}
+
+function protectMoney(s) {
+  const vals = [];
+  const src = s.replace(
+    /\$\s*(\d[\d,]*(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?(?![a-z0-9])/gi,
+    (m, num, u) => {
+      vals.push(moneyToZh(num, u));
+      return 'ZQX' + (vals.length - 1) + 'XQZ';
+    }
+  );
+  return { src, vals };
+}
+
+function restoreMoney(t, vals) {
+  let out = t;
+  if (vals.length) {
+    out = out.replace(/Z\s*Q\s*X\s*(\d+)\s*X\s*Q\s*Z/gi, (m, i) =>
+      vals[+i] === undefined ? m : vals[+i]
+    );
+  }
+  // 翻译器若把占位符弄坏（曾把 ⟦0⟧ 翻成「⟦零⟧」），宁可丢掉金额也不要留符号
+  // 只清掉带括号的残留，避免误伤正文里的「零售」「清零」
+  return out
+    .replace(/ZQX\d+XQZ/gi, ' ')
+    .replace(/[⟦\[［]\s*(?:\d+|零|〇)\s*[⟧\]］]/g, ' ');
 }
 
 // 已经是中文就不翻；两个源都失败就保留英文原句，不影响出图
@@ -225,9 +307,11 @@ async function translateList(list, tag) {
 
   const out = await mapLimit(list, 3, async (s) => {
     if (CJK.test(s)) return s;
+    // 金额先换成占位符，翻译器碰不到数字，就不会把金额拆坏
+    const { src, vals } = protectMoney(s);
     for (const fn of sources) {
       try {
-        const t = tidyZh(clean(await fn(s)));
+        const t = tidyZh(restoreMoney(clean(await fn(src)), vals));
         // 必须真拿到中文，且不能是接口的限额警告
         if (CJK.test(t) && !/MYMEMORY|WARNING|QUOTA|INVALID/i.test(t)) {
           return clip(t, 92);
@@ -266,18 +350,236 @@ async function getFinance(limit) {
   return out;
 }
 
-// 按 <item> / <entry> 逐块取标题，避免把 feed 自己的名字混进列表
-function rssTitles(xml) {
-  const items = [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map((m) => m[0]);
-  const entries = items.length
-    ? items
+// 多个源轮流各取一条，保证板块里来源多样（否则第一个源会独占整块）
+const STOP_WORDS = new Set(
+  ('the and for with that this from after over into its has have will says said new more than ' +
+    'about amid are was were but not you your their they his her how why what when who can ' +
+    'could would should out off now ahead further still just one two three')
+    .split(' ')
+    .filter(Boolean)
+);
+
+// 标题指纹：英文取实词、中文取二元组，用来判断两个源是否在报同一件事
+function fpSet(s) {
+  const words = (s.toLowerCase().match(/[a-z][a-z0-9]{2,}/g) || []).filter(
+    (w) => !STOP_WORDS.has(w)
+  );
+  const zh = s.match(/[\u4e00-\u9fa5]{2}/g) || [];
+  return new Set([...words, ...zh]);
+}
+
+function tooSimilar(set, sets) {
+  for (const o of sets) {
+    if (!o.size || !set.size) continue;
+    let inter = 0;
+    for (const w of set) if (o.has(w)) inter++;
+    if (inter / Math.min(set.size, o.size) >= 0.55) return true;
+  }
+  return false;
+}
+
+function roundRobin(buckets, limit) {
+  const picked = [];
+  const prints = [];
+  let progressed = true;
+  while (picked.length < limit && progressed) {
+    progressed = false;
+    for (const items of buckets) {
+      if (picked.length >= limit) break;
+      const it = items.shift();
+      if (!it) continue;
+      progressed = true;
+      const fp = fpSet(it.title);
+      if (tooSimilar(fp, prints)) continue; // 同一件事被两家报道，只留一条
+      prints.push(fp);
+      picked.push(it);
+    }
+  }
+  return picked;
+}
+
+// 国际军事 / 地缘：路透、彭博的军事报道经 Google News 聚合
+// （两家官方 RSS 已停止服务，只能这样拿到「某社报道」的口径）
+// Google News 在境外机房可达，不通时自动退到专业防务媒体，保证板块不空
+async function getMilitary(limit) {
+  const gnews = (q) =>
+    'https://news.google.com/rss/search?q=' +
+    encodeURIComponent(q) +
+    '&hl=en-US&gl=US&ceid=US:en';
+
+  const feeds = [
+    {
+      label: '',
+      url: gnews(
+        'when:3d (site:reuters.com OR site:bloomberg.com) (military OR missile OR troops OR airstrike OR defense OR war OR sanctions)'
+      ),
+    },
+    { label: '防务新闻', url: 'https://www.defensenews.com/arc/outboundfeeds/rss/' },
+    { label: '战区', url: 'https://www.twz.com/feed' },
+    { label: '半岛电视台', url: 'https://www.aljazeera.com/xml/rss/all.xml' },
+  ];
+
+  const settled = await Promise.allSettled(feeds.map((f) => fetchText(f.url, null, 20000)));
+  const buckets = [];
+  settled.forEach((r, i) => {
+    const feed = feeds[i];
+    if (r.status !== 'fulfilled') {
+      console.log('军事源不可用：' + (feed.label || 'Google 通讯社聚合'));
+      buckets.push([]);
+      return;
+    }
+    const items = rssEntries(r.value)
+      .map((e) => {
+        // Google News 的标题尾巴带「 - Reuters」，剥掉，改用 source 字段标来源
+        const tail = (e.title.match(/\s-\s([^-]{2,30})$/) || [])[1] || '';
+        const src = srcZh(e.src || tail) || (e.src || tail ? '' : feed.label);
+        return {
+          title: e.title.replace(/\s-\s[^-]{2,30}$/, '').trim(),
+          src: src || feed.label,
+        };
+      })
+      .filter((x) => x.title.length >= 18 && MIL_KEY.test(x.title));
+    buckets.push(items);
+  });
+
+  const picked = roundRobin(buckets, limit);
+  if (!picked.length) return [];
+  const zh = await translateList(
+    picked.map((p) => clip(p.title, 110)),
+    '军事'
+  );
+  const out = [];
+  picked.forEach((p, i) => {
+    const line = (p.src ? `【${p.src}】` : '') + clip(zh[i], 76);
+    if (!out.includes(line)) out.push(line);
+  });
+  return out;
+}
+
+// 主流币行情：多家交易所依次兜底，全不可用就跳过这一行，不影响出图
+async function getCryptoPrice() {
+  const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
+  const tries = [
+    async () => {
+      const u =
+        'https://api.binance.com/api/v3/ticker/24hr?symbols=' +
+        encodeURIComponent('["BTCUSDT","ETHUSDT"]');
+      const j = JSON.parse(await fetchText(u, null, 12000));
+      return j.map((x) => ({
+        s: x.symbol.replace('USDT', ''),
+        p: +x.lastPrice,
+        c: +x.priceChangePercent,
+      }));
+    },
+    async () => {
+      const out = [];
+      for (const [s, id] of [
+        ['BTC', 'BTC-USDT'],
+        ['ETH', 'ETH-USDT'],
+      ]) {
+        const j = JSON.parse(
+          await fetchText('https://www.okx.com/api/v5/market/ticker?instId=' + id, null, 12000)
+        );
+        const d = j.data[0];
+        out.push({ s, p: +d.last, c: (d.last / d.open24h - 1) * 100 });
+      }
+      return out;
+    },
+    async () => {
+      const out = [];
+      for (const id of ['BTC', 'ETH']) {
+        const j = JSON.parse(
+          await fetchText('https://api.coinbase.com/v2/prices/' + id + '-USD/spot', null, 12000)
+        );
+        out.push({ s: id, p: +j.data.amount, c: null });
+      }
+      return out;
+    },
+  ];
+  for (const fn of tries) {
+    try {
+      const list = await fn();
+      if (list && list.length && list.every((x) => x.p > 0)) {
+        return (
+          '行情：' +
+          list
+            .map(
+              (x) =>
+                `${x.s} ${fmt(x.p)}` +
+                (x.c === null ? '' : `（${x.c >= 0 ? '+' : ''}${x.c.toFixed(1)}%）`)
+            )
+            .join(' · ')
+        );
+      }
+    } catch (e) {
+      /* 换下一家交易所 */
+    }
+  }
+  return '';
+}
+
+// 币圈：The Block / Cointelegraph / Decrypt 轮流取，正文译成中文
+async function getCrypto(limit) {
+  const feeds = [
+    { label: 'The Block', url: 'https://www.theblock.co/rss.xml' },
+    { label: 'Cointelegraph', url: 'https://cointelegraph.com/rss' },
+    { label: 'Decrypt', url: 'https://decrypt.co/feed' },
+  ];
+
+  const [price, ...lists] = await Promise.all([
+    getCryptoPrice().catch(() => ''),
+    ...feeds.map((f) =>
+      fetchText(f.url, null, 20000).catch((e) => {
+        console.log('币圈源不可用：' + f.label);
+        return '';
+      })
+    ),
+  ]);
+
+  const buckets = lists.map((xml, i) =>
+    (xml ? rssEntries(xml) : [])
+      .filter((e) => e.title.length >= 20 && CRYPTO_KEY.test(e.title))
+      .map((e) => ({
+        title: e.title.replace(/\s-\s[^-]{2,30}$/, '').trim(),
+        src: srcZh(e.src) || feeds[i].label,
+      }))
+  );
+
+  const picked = roundRobin(buckets, limit);
+  const zh = picked.length
+    ? await translateList(
+        picked.map((p) => clip(p.title, 110)),
+        '币圈'
+      )
+    : [];
+
+  const out = [];
+  picked.forEach((p, i) => {
+    const line = `【${p.src}】` + clip(zh[i], 76);
+    if (!out.includes(line)) out.push(line);
+  });
+  return price ? [price, ...out] : out;
+}
+
+
+// 按 <item> / <entry> 逐块取，避免把 feed 自己的名字混进列表
+// 同时取 <source>（Google News 用它标注原始媒体，如 Reuters / Bloomberg）
+function rssEntries(xml) {
+  const blocks = [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map((m) => m[0]);
+  const ents = blocks.length
+    ? blocks
     : [...xml.matchAll(/<entry\b[\s\S]*?<\/entry>/gi)].map((m) => m[0]);
-  return entries
+  return ents
     .map((block) => {
-      const m = block.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-      return m ? clean(m[1]) : '';
+      const t = block.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+      const s = block.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
+      return { title: t ? clean(t[1]) : '', src: s ? clean(s[1]) : '' };
     })
-    .filter(Boolean);
+    .filter((x) => x.title);
+}
+
+function rssTitles(xml) {
+  return rssEntries(xml).map((x) => x.title);
 }
 
 // 量子位的会议 PR 稿（前瞻/分论坛/报名）无信息量，跳过
@@ -415,19 +717,22 @@ async function getGithubTrending(limit) {
       return [];
     });
 
-  const [finance, techCn, qbt, ifanr, aiGlobal, ghTrending] = await Promise.all([
-    safe('财经源', getFinance(FIN_LIMIT)),
-    safe('IT之家', getCnTech(TECH_ITHOME)),
-    safe('量子位', getCnAI(TECH_QBT)),
-    safe('爱范儿', getIfanrAI(TECH_IFANR)),
-    safe('海外AI', getGlobalAI(GLOBAL_LIMIT)),
-    safe('GitHub', getGithubTrending(GH_LIMIT)),
-  ]);
+  const [finance, crypto, techCn, qbt, ifanr, aiGlobal, military, ghTrending] =
+    await Promise.all([
+      safe('财经源', getFinance(FIN_LIMIT)),
+      safe('币圈源', getCrypto(CRYPTO_LIMIT)),
+      safe('IT之家', getCnTech(TECH_ITHOME)),
+      safe('量子位', getCnAI(TECH_QBT)),
+      safe('爱范儿', getIfanrAI(TECH_IFANR)),
+      safe('海外AI', getGlobalAI(GLOBAL_LIMIT)),
+      safe('军事源', getMilitary(MIL_LIMIT)),
+      safe('GitHub', getGithubTrending(GH_LIMIT)),
+    ]);
 
   const tech = [...techCn].filter((s, i, arr) => arr.indexOf(s) === i);
   const aiNews = [...qbt, ...ifanr].filter((s, i, arr) => arr.indexOf(s) === i);
   console.log(
-    `外部资讯：财经 ${finance.length} / 科技 ${tech.length} / AI要闻 ${aiNews.length}（量子位 ${qbt.length}+爱范儿 ${ifanr.length}）/ 海外 ${aiGlobal.length} / 开源项目 ${ghTrending.length}`
+    `外部资讯：财经 ${finance.length} / 币圈 ${crypto.length} / 科技 ${tech.length} / AI要闻 ${aiNews.length}（量子位 ${qbt.length}+爱范儿 ${ifanr.length}）/ 海外 ${aiGlobal.length} / 军事 ${military.length} / 开源项目 ${ghTrending.length}`
   );
 
   // ---------- 2. 打开原站 ----------
@@ -458,7 +763,7 @@ async function getGithubTrending(limit) {
 
   // ---------- 3. 把「实时热搜」换成财经 / AI 板块 ----------
   const replaced = await page.evaluate(
-    ({ finance, tech, aiNews, aiGlobal, ghTrending }) => {
+    ({ finance, crypto, tech, aiNews, aiGlobal, military, ghTrending }) => {
       const main = document.querySelector('#lylme main');
       if (!main) return 'no-main';
 
@@ -502,9 +807,11 @@ async function getGithubTrending(limit) {
 
       const panels = [
         ['「财经 · 股市」', finance],
+        ['「币圈 · 加密」', crypto],
         ['「AI · 科技」', tech],
         ['「AI 圈大事」', aiNews],
         ['「海外 AI 动态」', aiGlobal],
+        ['「国际军事 · 地缘」', military],
         ['「本周热门开源项目」', ghTrending],
       ];
       for (const [title, items] of panels) {
@@ -513,7 +820,7 @@ async function getGithubTrending(limit) {
       hot.remove();
       return 'ok';
     },
-    { finance, tech, aiNews, aiGlobal, ghTrending }
+    { finance, crypto, tech, aiNews, aiGlobal, military, ghTrending }
   );
   console.log('板块替换：' + replaced);
 
@@ -563,9 +870,11 @@ async function getGithubTrending(limit) {
     height: Math.round(box.height * 2),
     news,
     finance,
+    crypto,
     tech,
     aiNews,
     aiGlobal,
+    military,
     ghTrending,
   };
 
@@ -576,7 +885,7 @@ async function getGithubTrending(limit) {
   );
 
   console.log(
-    `完成：${imgPath}（新闻 ${news.length} / 财经 ${finance.length} / 科技 ${tech.length} / AI要闻 ${aiNews.length} / 海外 ${aiGlobal.length} / 开源项目 ${ghTrending.length}，stale=${stale}）`
+    `完成：${imgPath}（新闻 ${news.length} / 财经 ${finance.length} / 币圈 ${crypto.length} / 科技 ${tech.length} / AI要闻 ${aiNews.length} / 海外 ${aiGlobal.length} / 军事 ${military.length} / 开源项目 ${ghTrending.length}，stale=${stale}）`
   );
   await browser.close();
 })().catch((e) => {
