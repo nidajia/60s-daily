@@ -51,11 +51,11 @@
   </header>
 
   <div class="card">
-    <a class="shot" href="60s.png" target="_blank" rel="noopener">
+    <a class="shot" id="open" href="60s.png" target="_blank" rel="noopener">
       <img class="shot" id="shot" src="60s.png" alt="今日日报长图">
     </a>
     <div class="bar">
-      <a class="btn primary" id="dl" href="60s.png" download>保存图片</a>
+      <a class="btn primary" id="dl" href="60s.png" target="_blank" rel="noopener">打开原图</a>
       <a class="btn" href="api.json" target="_blank" rel="noopener">查看接口</a>
     </div>
   </div>
@@ -68,17 +68,19 @@
 </div>
 
 <script>
-  // 每天图片同名覆盖，加时间戳强制刷新，避免浏览器/CDN 拿到昨天的图
+  // 每天图片同名覆盖，加日期参数强制刷新，避免浏览器/CDN 拿到昨天的图
   const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-  const shot = document.getElementById('shot');
-  const dl = document.getElementById('dl');
-  shot.src = '60s.png?v=' + stamp;
-  dl.href = '60s.png?v=' + stamp;
-  document.querySelector('a.shot').href = '60s.png?v=' + stamp;
 
   fetch('api.json?v=' + stamp, {cache:'no-store'})
     .then(r => r.json())
     .then(d => {
+      // 关键：图走加速镜像。GitHub Pages 对 1.6MB 大图限速到 26KB/s，直接引用要等一分钟
+      const src = (d.image || '') + (d.image && d.image.indexOf('?') < 0 ? '?v=' + stamp : '');
+      if (d.image) {
+        document.getElementById('shot').src = src;
+        document.getElementById('open').href = d.image;
+        document.getElementById('dl').href = d.image;
+      }
       document.getElementById('date').textContent = d.date || '—';
       document.getElementById('updated').textContent =
         d.updated_at ? new Date(d.updated_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) + ' 更新' : '';
