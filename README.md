@@ -123,21 +123,38 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
 
 ## 填给微信插件
 
-把下面地址里的 `你的用户名` `仓库名` 换成实际值（本仓库是 `nidajia/60s-daily`）：
+**图片地址（插件里填这个）**：
 
 ```
-主用：https://gh-proxy.com/https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json
-备用：https://ghfast.top/https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json
+主用：https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png
+备用：https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png
 ```
 
-**为什么不直接用 raw 或 jsDelivr**（实测结果）：
+**JSON 接口（插件支持读字段时用）**：
 
-| 地址 | 国内访问 | 缓存 | 结论 |
-| --- | --- | --- | --- |
-| raw.githubusercontent.com | 20 秒超时 | — | 用不了 |
-| cdn.jsdelivr.net | 1.4 秒 | 12 小时 | 会推昨天的图 |
-| gh-proxy.com | 1.7 秒 | 60 秒 | 主用 |
-| ghfast.top | 1.2 秒 | 5 分钟 | 备用 |
+```
+https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json
+```
+
+**手机上看图 / 保存图的网页**（GitHub Pages，小文件直连很快）：
+
+```
+https://nidajia.github.io/60s-daily/
+```
+
+**地址实测（2026-10-26，关掉代理、直接下整张 1.6MB 图）**：
+
+| 地址 | 能否打开 | 下完整张图 | 缓存 | 结论 |
+| --- | --- | --- | --- | --- |
+| raw.githubusercontent.com | ❌ 12 秒超时 | 下不来 | — | 用不了 |
+| nidajia.github.io（Pages） | ✅ 0.5 秒 | 26KB/s，60 秒+ | 10 分钟 | 只能开网页，当图片地址会超时 |
+| gh-proxy.com | ✅ | **5.5 秒** | 60 秒 | 图片主地址 |
+| ghfast.top | ✅ | 7.1 秒 | 5 分钟 | 备用 |
+| gcore.jsdelivr.net | ✅ | 4.0 秒 | 12 小时 | 最快但有长缓存，只做救急 |
+| ghproxy.net | ✅ | 40 秒才下 1/3 | — | 太慢，淘汰 |
+
+> 要点：小文件（网页、api.json）走 GitHub Pages 最快；大图（1.6MB）必须走加速镜像，
+> 因为 GitHub 的国际出口对国内单连接限速到 26KB/s 左右。
 
 `api.json` 长这样，插件认哪个字段就取哪个（`url` / `image` / `imgurl` / `pic` 都是同一个图片地址）：
 
@@ -146,6 +163,9 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
   "date": "2026-10-26",
   "url": "https://gh-proxy.com/https://raw.githubusercontent.com/.../60s.png",
   "url2": "https://ghfast.top/https://raw.githubusercontent.com/.../60s.png",
+  "url3": "https://gcore.jsdelivr.net/gh/.../60s.png",
+  "site": "https://nidajia.github.io/60s-daily/",
+  "api": "https://gh-proxy.com/https://raw.githubusercontent.com/.../api.json",
   "width": 1400,
   "height": 7782,
   "stale": false,
@@ -164,9 +184,12 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
 
 ## 注意事项
 
-- **别用 raw.githubusercontent.com 和 jsDelivr 做主链接**：前者国内直连超时，后者有 12 小时缓存，会让群里的图延迟一天才更新。
+- **图片别用 raw.githubusercontent.com 和 GitHub Pages 做主链接**：前者国内直连超时，后者能连但只有 26KB/s，1.6MB 的图要 60 秒以上，插件会超时。
+- **jsDelivr 的 `@main` 有 12 小时缓存**，会推昨天的图，只能当救急。
 - 加速镜像都是免费公共服务，哪天某个慢或挂了，把 `gh-proxy.com` 换成 `ghfast.top` 即可，两个随便切。
-- `api.json` 里 `url` / `image` / `imgurl` / `pic` 是主地址，`url2` / `imgurl2` 是备用镜像地址。
+- `api.json` 里 `url` / `image` / `imgurl` / `pic` 是主地址，`url2` / `url3` 是备用镜像地址，`site` 是网页版。
+- 首次开启 Pages 后要等 1~3 分钟才生效；仓库根目录的 `.nojekyll` 用来关掉 Jekyll 处理。
+
 - Actions 的定时任务在高峰期可能延迟几分钟到半小时，做不到秒级准点。
 - 站点每天大约早上 6~7 点更新内容，若某天跑出来是前一天的（`"stale": true`），08:30 那次会自动补正。
 

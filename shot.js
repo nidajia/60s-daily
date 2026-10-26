@@ -16,15 +16,20 @@ const OUT_DIR = process.env.OUT_DIR || __dirname;
 const RAW = `https://raw.githubusercontent.com/${REPO}/main`;
 // 国内直连 raw.githubusercontent.com 会超时（实测 12s+ 无响应），不要作为主地址
 const [OWNER, NAME] = REPO.split('/');
-// 一级地址：GitHub 官方 Pages（*.github.io），不经过任何第三方加速站，国内多数网络可直连
-// 二级/三级：gh-proxy.com、ghfast.top 公共加速，Pages 不可达时兜底
 const SITE = `https://${(OWNER || 'owner').toLowerCase()}.github.io/${(NAME || 'repo').toLowerCase()}`;
-const IMG_SITE = `${SITE}/60s.png`;
-const IMG_MAIN = IMG_SITE;
-const IMG_BAK = `https://gh-proxy.com/${RAW}/60s.png`;
-const IMG_BAK2 = `https://ghfast.top/${RAW}/60s.png`;
-const IMG_CDN = `https://gcore.jsdelivr.net/gh/${REPO}@main/60s.png`;
-const API_SELF = `${SITE}/api.json`;
+// 无代理实测（下载整张 1.6MB 图）：
+//   raw.githubusercontent.com  12s 超时，根本下不来
+//   *.github.io（Pages）       能连上，但大图仅 26KB/s，要 60s+，不能做图片主地址
+//   gh-proxy.com               5.5s  ✅ 图片主地址
+//   ghfast.top                 7.1s  ✅ 备用
+//   gcore.jsdelivr.net         4.0s  ✅ 但 @main 分支有 12 小时缓存，只做救急
+const IMG_MAIN = `https://gh-proxy.com/${RAW}/60s.png`;
+const IMG_BAK = `https://ghfast.top/${RAW}/60s.png`;
+const IMG_BAK2 = `https://gcore.jsdelivr.net/gh/${REPO}@main/60s.png`;
+const IMG_CDN = IMG_BAK2;
+const API_SELF = `https://gh-proxy.com/${RAW}/api.json`;
+// 给人看的网页版（Pages 小文件直连很快，适合手机点开预览/保存）
+const SITE_PAGE = `${SITE}/`;
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -872,8 +877,10 @@ async function getGithubTrending(limit) {
     url3: IMG_BAK2,
     imgurl3: IMG_BAK2,
     cdn: IMG_CDN,
+    site: SITE_PAGE,
+    page: SITE_PAGE,
     api: API_SELF,
-    api2: `https://gh-proxy.com/${RAW}/api.json`,
+    api2: `${SITE}/api.json`,
     api3: `https://ghfast.top/${RAW}/api.json`,
     raw: `${RAW}/60s.png`,
     width: Math.round(box.width * 2),
