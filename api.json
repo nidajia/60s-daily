@@ -1,24 +1,26 @@
 {
   "date": "2026-10-26",
-  "updated_at": "2026-10-26T06:03:28.479Z",
+  "updated_at": "2026-10-26T06:07:07.121Z",
   "title": "60秒读懂世界",
   "source": "https://60s.timeand.cn/",
   "stale": false,
-  "url": "https://nidajia.github.io/60s-daily/60s.png",
-  "image": "https://nidajia.github.io/60s-daily/60s.png",
-  "imgurl": "https://nidajia.github.io/60s-daily/60s.png",
-  "pic": "https://nidajia.github.io/60s-daily/60s.png",
-  "url2": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "imgurl2": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "url3": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "imgurl3": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "url": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "image": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "imgurl": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "pic": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "url2": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "imgurl2": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "url3": "https://gcore.jsdelivr.net/gh/nidajia/60s-daily@main/60s.png",
+  "imgurl3": "https://gcore.jsdelivr.net/gh/nidajia/60s-daily@main/60s.png",
   "cdn": "https://gcore.jsdelivr.net/gh/nidajia/60s-daily@main/60s.png",
-  "api": "https://nidajia.github.io/60s-daily/api.json",
-  "api2": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json",
+  "site": "https://nidajia.github.io/60s-daily/",
+  "page": "https://nidajia.github.io/60s-daily/",
+  "api": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json",
+  "api2": "https://nidajia.github.io/60s-daily/api.json",
   "api3": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json",
   "raw": "https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
   "width": 1400,
-  "height": 7908,
+  "height": 7860,
   "news": [
     "1、于蕾出任2027羊年央视春晚总导演，连续第五年执导春晚",
     "2、亚洲最长地铁环线武汉12号线即将全线开通：没有传统终点站，坐一圈96分钟，同站进出只需2元",
@@ -37,8 +39,8 @@
     "15、法国数十万人参与新一轮游行，当天有约1000人被捕"
   ],
   "finance": [
-    "整点回顾：市场午后震荡回升，沪指拉升翻红，深成指、创业板指跌幅收窄，机器人概念股持续活跃，上纬新材等多股涨停，油气股集体拉升，中国石油涨近4%，创2008年5月以来新高…",
-    "智能驾驶概念异动拉升，金溢科技直线涨停，万集科技、高新兴、锐明技术、兴民智通等纷纷冲高。",
+    "整点回顾：市场午后震荡回升，沪指拉升翻红，深成指、创业板指跌幅收窄，机器人概念股持续活跃，上纬新材等多股涨停，油气股集体拉升，中国石油涨超4%，创2008年5月以来新高…",
+    "智能驾驶概念异动拉升，万集科技、金溢科技双双涨停，高新兴、锐明技术、兴民智通、千方科技等纷纷冲高。",
     "“相关部门已经在推动车辆安装C-V2X（蜂窝车联网）的强标制定工作。相关工作组已经成立，有几十家单位已经参与进来了。”日前，一位不愿透露姓名的C-V2X领域从业者透露了上述信息…",
     "根据OpenRouter最新数据测算，上周（10月19日至25日）全球AI大模型总调用量为188万亿Token，环比增长14.63%。 其中，上榜的AI大模型中…",
     "中国石油午后涨近4%，创2008年5月以来新高。",
@@ -47,15 +49,15 @@
     "沪指午后拉升翻红，深成指、创业板指跌幅收窄，游戏、油气、白酒、食品、医药医疗等方向涨幅居前，沪深京三市上涨个股近3000只。"
   ],
   "crypto": [
-    "行情：BTC $80,209（-0.4%） · ETH $2,325（-1.0%）",
+    "行情：BTC $80,167（-0.5%） · ETH $2,323（-1.2%）",
     "【The Block】CoinDCX确认退休钱包的1600万美元损失，此前几天，首席执行官称违规报告为“虚假警报”",
     "【Cointelegraph】以下是今天加密货币发生的事情",
     "【Decrypt】富国银行、思科、Intuit与另外6家反对代币化股票的公司",
     "【The Block】Keystone客户表示，硬件钱包制造商承诺删除的数据泄露",
-    "【Cointelegraph】Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
-    "【Decrypt】Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
-    "【The Block】Crypto longs lose $404 million in four hours as bitcoin briefly slips below…",
-    "【Decrypt】Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets"
+    "【Cointelegraph】香港将纳斯达克上市公司Solana列为战略企业",
+    "【Decrypt】尽管周末下滑，比特币ETF仍连续两周大跌",
+    "【The Block】加密多头在四个小时内失去了4.04亿美元，因为比特币短暂下滑到8万美元以下",
+    "【Decrypt】香港最大的银行在300万个钱包中放入稳定币"
   ],
   "tech": [
     "英伟达下调 Rubin GPU 系统 HBM 与 NVLink 带宽，网络带宽提升",
@@ -83,7 +85,7 @@
     "Block的新声音模型听起来很人性化",
     "被迫选择，Grok的人工智能模型选择了共和党人。OpenAI挑选民主党人。",
     "以下是可以存在于您的短信中的顶级AI代理",
-    "OpenAI says it will no longer train its AI models on the live internet…"
+    "OpenAI表示，它将不再在实时互联网上训练其人工智能模型…"
   ],
   "military": [
     "【路透社】油价从近六个月高位下跌，因伊朗战争敌对行动有望缓解",
@@ -92,8 +94,8 @@
     "【半岛电视台】美国军方称帮助海湾国家出口15亿桶石油",
     "【路透社】阿尔及利亚自1973年以来首次向尼日尔派遣部队",
     "【防务新闻】“西方无法阻止我”：随着俄罗斯跟踪与乌克兰有关的美国卫星，太空战争升温",
-    "【战区】Denmark To Buy Anthem Munitions…",
-    "【半岛电视台】Iran war live: Saudi, Pakistani and Turkish defence officials due in Tehran"
+    "【战区】丹麦购买Anthem弹药，联合打击导弹进行双远程打击",
+    "【半岛电视台】伊朗战争现场：沙特、巴基斯坦和土耳其国防官员将抵达德黑兰"
   ],
   "ghTrending": [
     "【实用工具】pengchujin/aerial-tv ★5.3k — 给国产电视的一块干净桌面：参照 tvOS 设计的开源 Android TV 桌面，没有广告，开机自动接管…",
@@ -101,10 +103,10 @@
     "【Agent】Jakeschincariol/day-trader-skill ★1.7k — 11日内交易的Claude技能：扫描数千张图表，跟踪突发新闻，每次进出时间…",
     "【模型推理】colinhacks/reylo ★1.3k — 将.sql文件导入到具有完整类型推断和零代码的TypeScript中。",
     "【实用工具】rddmwmddr/android-ad-cleaner ★1.1k — 关掉国产安卓手机系统里的广告、热搜、资讯推荐和营销推送。不 root，可还原，支持 AI 智能体一键执行。",
-    "【模型推理】eagle-hq/EAGLE-4 ★994 — EAGLE-4的官方推理代码",
-    "【其他】lyramakesmusic/neuron-explorer ★878 — Qwen3.5-4B的Steering-first neuron explorer：推送每个MLP神经元，保留每次推出…",
-    "【Agent】morganlinton/BeautifulRust ★866 — A Claude Code plugin that teaches Claude to write idiomatic…",
-    "【其他】mizorewww/gdirect ★622 — Rust Google Drive direct downloader using pinned libaria2",
-    "【开发工具】raymondchins/Bridgeplay ★515 — Free fork of NotProton: Windows Steam games in Mac Steam…"
+    "【模型推理】eagle-hq/EAGLE-4 ★995 — EAGLE-4的官方推理代码",
+    "【其他】lyramakesmusic/neuron-explorer ★880 — Qwen3.5-4B的Steering-first neuron explorer：推送每个MLP神经元，保留每次推出…",
+    "【Agent】morganlinton/BeautifulRust ★867 — Claude Code插件，教Claude编写习惯用法、强健的Rust",
+    "【其他】mizorewww/gdirect ★623 — 使用固定libaria2的Rust Google Drive直接下载器",
+    "【开发工具】raymondchins/Bridgeplay ★515 — NotProton免费分支：Mac Steam中的Windows Steam游戏…"
   ]
 }
