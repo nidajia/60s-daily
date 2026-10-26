@@ -1,0 +1,59 @@
+name: 每日60秒日报
+
+on:
+  # 首次上传脚本时自动跑一次（只对脚本变更生效，产物提交不会触发，不会循环）
+  push:
+    paths:
+      - 'shot.js'
+      - '.github/workflows/daily.yml'
+  schedule:
+    # GitHub 用 UTC 时间，北京时间 = UTC+8
+    - cron: '30 23 * * *'   # 北京 07:30
+    - cron: '30 0 * * *'    # 北京 08:30（兜底，防止站点更新延迟）
+  workflow_dispatch:        # 支持手动点一下运行
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-60s
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装中文字体
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+
+      - name: 安装 Playwright
+        run: |
+          npm init -y > /dev/null 2>&1
+          npm i playwright
+          npx playwright install --with-deps chromium
+
+      - name: 截图并生成 api.json
+        env:
+          REPO: ${{ github.repository }}
+        run: node shot.js
+
+      - name: 提交更新
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 60s.png api.json
+          if git diff --cached --quiet; then
+            echo "内容没有变化，跳过提交"
+          else
+            git commit -m "chore: 更新 $(date -u -d '+8 hours' +%F) 日报"
+            git push
+          fi
