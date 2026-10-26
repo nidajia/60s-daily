@@ -16,28 +16,51 @@
 
 原站 `#lylme main` 下共 5 个板块：60秒新闻 / 实时热搜 / 历史上的今天 / 今日黄历 / 每日一语。
 
-`shot.js` 在截图前用 JS 把「实时热搜」整块删掉，然后克隆第一个板块当样式模板，插入五个新板块，所以字体、缩进、编号跟原站完全一致：
+`shot.js` 在截图前用 JS 把「实时热搜」整块删掉，然后克隆第一个板块当样式模板，插入七个新板块，所以字体、缩进、编号跟原站完全一致：
 
 | 板块 | 数据源 | 条数 | 说明 |
 | --- | --- | --- | --- |
 | 「财经 · 股市」 | 华尔街见闻 A股频道快讯 API | 8 | 盘中异动、融资、大宗 |
+| 「币圈 · 加密」 | The Block + Cointelegraph + Decrypt | 8~9 | 首行是 BTC/ETH 行情，其余**自动译成中文** |
 | 「AI · 科技」 | IT之家 RSS | 8 | 芯片/半导体/机器人/算力，按关键词筛 |
 | 「AI 圈大事」 | 量子位 RSS + 爱范儿 RSS | 9 | 国内 AI 行业与产品动态，中文原生 |
 | 「海外 AI 动态」 | TechCrunch AI + The Verge AI | 8 | 国际模型与产品，**自动译成中文** |
+| 「国际军事 · 地缘」 | Google News 聚合的**路透社 / 彭博社** + 防务新闻 + 战区 | 8 | 每条前缀标出消息来源，**自动译成中文** |
 | 「本周热门开源项目」 | GitHub 搜索 API（近 7 天新建、按星标排序） | 10 | 带【分类】标签和 ★星标数，可直接挑来试，**描述自动译成中文** |
 
-改完图片高度约 6700px（原站带热搜时是 8284px）。
+改完图片高度约 7800px。
 
 想调整的话改 `shot.js` 顶部常量：
 
 ```js
-const FIN_LIMIT   = 8;   // 财经
-const TECH_ITHOME = 8;   // AI·科技（IT之家）
-const TECH_QBT    = 6;   // AI 圈大事（量子位）
-const TECH_IFANR  = 3;   // AI 圈大事（爱范儿补充）
-const GLOBAL_LIMIT= 8;   // 海外 AI 动态
-const GH_LIMIT    = 10;  // 本周热门开源项目
+const FIN_LIMIT    = 8;   // 财经
+const CRYPTO_LIMIT = 8;   // 币圈（行情行额外占 1 条，故最多 9 条）
+const MIL_LIMIT    = 8;   // 国际军事 / 地缘
+const TECH_ITHOME  = 8;   // AI·科技（IT之家）
+const TECH_QBT     = 6;   // AI 圈大事（量子位）
+const TECH_IFANR   = 3;   // AI 圈大事（爱范儿补充）
+const GLOBAL_LIMIT = 8;   // 海外 AI 动态
+const GH_LIMIT     = 10;  // 本周热门开源项目
 ```
+
+### 「国际军事 · 地缘」为什么不是直接抓路透
+
+路透社和彭博社早已停止对外提供 RSS，官网也挡爬虫。所以这条线走 **Google News 的站内检索**：
+
+```
+https://news.google.com/rss/search?q=when:3d (site:reuters.com OR site:bloomberg.com) (military OR missile …)
+```
+
+Google News 的条目带 `<source>` 字段，正好标明原始媒体，脚本据此打出【路透社】【彭博社】前缀。
+
+Google News 在国内不通（本机 18 秒超时），但**在 GitHub Actions 的美国机房可用**。真不通时会自动退到防务新闻（Defense News）和战区（The War Zone），板块不会空。
+
+### 「币圈 · 加密」的三个细节
+
+1. 首行行情依次尝试 Binance → OKX → Coinbase，三家全不通就**跳过这一行**而不是显示报错。
+2. The Block 是专业币圈媒体，Cointelegraph、Decrypt 更杂（Decrypt 会混进 Google 隐私政策、游戏光盘这类新闻），所以用 `CRYPTO_KEY` 按关键词过滤。
+3. 两家报道同一件事很常见（比如 Keystone 硬件钱包泄露），靠 `roundRobin()` + `tooSimilar()` 按标题词集相似度去重，同一件事只留一条。
+
 
 ### 「本周热门开源项目」是怎么筛的
 
@@ -59,14 +82,16 @@ Workflow 里把它接到了 `secrets.GITHUB_TOKEN`，搜索接口限速从 10 �
 - 爱范儿 是综合科技媒体，`IFANR_AI` 只留 AI 浓度高的稿子，`IFANR_SKIP` 去掉早报和导购。
 - 任何一个源挂掉都不会中断截图，对应板块显示「（今日该板块数据源暂不可用）」。
 
-### 海外条目的自动翻译
+### 英文条目的自动翻译
 
-两个英文板块在出图前会被翻成中文，逻辑在 `translateList()`：
+四个英文板块（币圈 / 海外 AI / 国际军事 / 开源项目）在出图前会被翻成中文，逻辑在 `translateList()`：
 
 1. 先探测 Google 免费端点（`translate.googleapis.com`）是否可达——通就用它，质量最好；
 2. 不通或失败则降到 MyMemory（国内可直连）；
 3. 两个都失败就**保留英文原句**，绝不把接口报错文本混进版面；
-4. 译完统一走 `tidyZh()`：收敛标点间距、`$ T` → `万亿美元`、把误音译的 `格罗克` 还原成 `Grok`。
+4. 译完统一走 `tidyZh()`：收敛标点间距、把误音译的 `格罗克` 还原成 `Grok`。
+
+**金额必须特殊处理**：直接把 `$404 million` 交给翻译器，会被拆成「4.04 $」，或和中文单位错位成「损失万美元1600」。所以 `protectMoney()` 在翻译前把金额换成占位符 `ZQX0XQZ`，译完由 `restoreMoney()` 填回「4.04亿美元」。占位符必须用纯字母数字——试过 `⟦0⟧`，被 MyMemory 当成引号翻成了「⟦零⟧」。
 
 判据是「返回文本里必须含汉字」，所以任何源返回限额警告都会被判失败并换下一个源。新增语种或换源时守住这条即可。
 
@@ -122,18 +147,20 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
   "url": "https://gh-proxy.com/https://raw.githubusercontent.com/.../60s.png",
   "url2": "https://ghfast.top/https://raw.githubusercontent.com/.../60s.png",
   "width": 1400,
-  "height": 6790,
+  "height": 7782,
   "stale": false,
   "news": ["1、…", "2、…"],
   "finance": ["上海钢联发布数据显示…", "银行股震荡拉升…"],
+  "crypto": ["行情：BTC $80,123（-2.4%）· ETH $2,680（+1.1%）", "【The Block】…"],
   "tech": ["英伟达下调 Rubin GPU 系统 HBM 带宽…", "丰田发力人形机器人…"],
   "aiNews": ["实测 Kimi K3.1 Pro，国模终于继续卷旗舰…"],
   "aiGlobal": ["Grok发布其人工智能生成的“奥德赛”的前七分钟…"],
+  "military": ["【路透社】…", "【防务新闻】法国、英国首次开展联合空中核打击演习…"],
   "ghTrending": ["【实用工具】pengchujin/aerial-tv ★5.2k — 给国产电视的一块干净桌面…"]
 }
 ```
 
-六个文字数组（`news` / `finance` / `tech` / `aiNews` / `aiGlobal` / `ghTrending`）跟图里的板块一一对应，方便插件直接拼文字消息，不一定要发图。海外板块的数组里已经是中文了。
+八个文字数组（`news` / `finance` / `crypto` / `tech` / `aiNews` / `aiGlobal` / `military` / `ghTrending`）跟图里的板块一一对应，方便插件直接拼文字消息，不一定要发图。除 `news` 外都已中文化。
 
 ## 注意事项
 
