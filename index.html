@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>今日日报 · 60秒读懂世界</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1a1a1a; --ink2:#6b7280;
+    --line:#e8eaed; --accent:#c0392b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;padding:18px 14px 40px;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:14px}
+  h1{font-size:18px;margin:0;letter-spacing:.5px}
+  .date{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .shot{display:block;width:100%;height:auto;background:#fff}
+  a.shot{cursor:zoom-in}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-top:1px solid var(--line)}
+  .btn{
+    flex:1 1 auto;min-width:120px;text-align:center;text-decoration:none;
+    font-size:14px;padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+    color:var(--ink);background:#fafbfc;transition:.15s;
+  }
+  .btn:active{transform:scale(.985);background:#f0f1f3}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .meta{
+    margin-top:14px;padding:12px 14px;font-size:12.5px;color:var(--ink2);
+    background:var(--card);border:1px solid var(--line);border-radius:12px;word-break:break-all;
+  }
+  .meta b{color:var(--ink);font-weight:600}
+  .meta code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#374151}
+  .meta div+div{margin-top:8px}
+  #updated{color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>60秒读懂世界</h1>
+    <span class="date"><span id="date">—</span> · <span id="updated">加载中</span></span>
+  </header>
+
+  <div class="card">
+    <a class="shot" href="60s.png" target="_blank" rel="noopener">
+      <img class="shot" id="shot" src="60s.png" alt="今日日报长图">
+    </a>
+    <div class="bar">
+      <a class="btn primary" id="dl" href="60s.png" download>保存图片</a>
+      <a class="btn" href="api.json" target="_blank" rel="noopener">查看接口</a>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div><b>图片直链</b><br><code id="u1">—</code></div>
+    <div><b>备用 ①</b><br><code id="u2">—</code></div>
+    <div><b>备用 ②</b><br><code id="u3">—</code></div>
+  </div>
+</div>
+
+<script>
+  // 每天图片同名覆盖，加时间戳强制刷新，避免浏览器/CDN 拿到昨天的图
+  const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const shot = document.getElementById('shot');
+  const dl = document.getElementById('dl');
+  shot.src = '60s.png?v=' + stamp;
+  dl.href = '60s.png?v=' + stamp;
+  document.querySelector('a.shot').href = '60s.png?v=' + stamp;
+
+  fetch('api.json?v=' + stamp, {cache:'no-store'})
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('date').textContent = d.date || '—';
+      document.getElementById('updated').textContent =
+        d.updated_at ? new Date(d.updated_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) + ' 更新' : '';
+      const set = (id, v) => { if (v) document.getElementById(id).textContent = v; };
+      set('u1', d.image);
+      set('u2', d.url2);
+      set('u3', d.url3);
+    })
+    .catch(() => {
+      document.getElementById('updated').textContent = '';
+      document.getElementById('u1').textContent = location.href.replace(/index\.html$/, '') + '60s.png';
+    });
+</script>
+</body>
+</html>

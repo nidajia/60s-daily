@@ -14,12 +14,17 @@ const REPO = process.env.REPO || 'owner/repo';
 const OUT_DIR = process.env.OUT_DIR || __dirname;
 
 const RAW = `https://raw.githubusercontent.com/${REPO}/main`;
-// 国内直连 raw.githubusercontent.com 不通，统一走加速镜像
-// gh-proxy.com 缓存 60 秒、ghfast.top 缓存 5 分钟，都能保证当天出图
-const IMG_MAIN = `https://gh-proxy.com/${RAW}/60s.png`;
-const IMG_BAK = `https://ghfast.top/${RAW}/60s.png`;
-const IMG_CDN = `https://cdn.jsdelivr.net/gh/${REPO}@main/60s.png`;
-const API_SELF = `https://gh-proxy.com/${RAW}/api.json`;
+// 国内直连 raw.githubusercontent.com 会超时（实测 12s+ 无响应），不要作为主地址
+const [OWNER, NAME] = REPO.split('/');
+// 一级地址：GitHub 官方 Pages（*.github.io），不经过任何第三方加速站，国内多数网络可直连
+// 二级/三级：gh-proxy.com、ghfast.top 公共加速，Pages 不可达时兜底
+const SITE = `https://${(OWNER || 'owner').toLowerCase()}.github.io/${(NAME || 'repo').toLowerCase()}`;
+const IMG_SITE = `${SITE}/60s.png`;
+const IMG_MAIN = IMG_SITE;
+const IMG_BAK = `https://gh-proxy.com/${RAW}/60s.png`;
+const IMG_BAK2 = `https://ghfast.top/${RAW}/60s.png`;
+const IMG_CDN = `https://gcore.jsdelivr.net/gh/${REPO}@main/60s.png`;
+const API_SELF = `${SITE}/api.json`;
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -864,8 +869,13 @@ async function getGithubTrending(limit) {
     pic: IMG_MAIN,
     url2: IMG_BAK,
     imgurl2: IMG_BAK,
+    url3: IMG_BAK2,
+    imgurl3: IMG_BAK2,
     cdn: IMG_CDN,
     api: API_SELF,
+    api2: `https://gh-proxy.com/${RAW}/api.json`,
+    api3: `https://ghfast.top/${RAW}/api.json`,
+    raw: `${RAW}/60s.png`,
     width: Math.round(box.width * 2),
     height: Math.round(box.height * 2),
     news,
