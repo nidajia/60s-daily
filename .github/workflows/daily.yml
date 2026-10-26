@@ -55,7 +55,20 @@ jobs:
           git add 60s.png api.json
           if git diff --cached --quiet; then
             echo "内容没有变化，跳过提交"
-          else
-            git commit -m "chore: 更新 $(date -u -d '+8 hours' +%F) 日报"
-            git push
+            exit 0
           fi
+          # 运行期间可能有别的提交进来（比如你又推了脚本），直接 push 会被拒
+          # 被拒就 fetch 后把改动重新落到远端最新提交之上再推，最多试 5 次
+          for i in 1 2 3 4 5; do
+            git commit -m "chore: 更新 $(date -u -d '+8 hours' +%F) 日报" || true
+            if git push; then
+              echo "推送成功"
+              exit 0
+            fi
+            echo "推送被拒，改到远端最新提交之上重试（第 $i 次）"
+            git fetch origin main
+            git reset --soft origin/main
+            sleep $((i * 2))
+          done
+          echo "多次重试仍失败"
+          exit 1
