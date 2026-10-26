@@ -38,12 +38,21 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
 
 ## 填给微信插件
 
-把下面两个地址里的 `你的用户名` `仓库名` 换成实际值：
+把下面地址里的 `你的用户名` `仓库名` 换成实际值（本仓库是 `nidajia/60s-daily`）：
 
 ```
-接口（推荐）：https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json
-备用（国内常更快）：https://cdn.jsdelivr.net/gh/你的用户名/仓库名@main/api.json
+主用：https://gh-proxy.com/https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json
+备用：https://ghfast.top/https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json
 ```
+
+**为什么不直接用 raw 或 jsDelivr**（实测结果）：
+
+| 地址 | 国内访问 | 缓存 | 结论 |
+| --- | --- | --- | --- |
+| raw.githubusercontent.com | 20 秒超时 | — | 用不了 |
+| cdn.jsdelivr.net | 1.4 秒 | 12 小时 | 会推昨天的图 |
+| gh-proxy.com | 1.7 秒 | 60 秒 | 主用 |
+| ghfast.top | 1.2 秒 | 5 分钟 | 备用 |
 
 `api.json` 长这样，插件认哪个字段就取哪个（`url` / `image` / `imgurl` / `pic` 都是同一个图片地址）：
 
@@ -60,10 +69,9 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
 
 ## 注意事项
 
-- **jsDelivr 有约 12 小时缓存**，当天新图可能延迟出现；要即时更新用 raw 那个地址。
-- **raw.githubusercontent.com 在国内可能直连不通**，如果插件取不到，把地址前缀换成加速镜像，例如：
-  - `https://ghfast.top/https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json`
-  - `https://gh-proxy.com/https://raw.githubusercontent.com/你的用户名/仓库名/main/api.json`
+- **别用 raw.githubusercontent.com 和 jsDelivr 做主链接**：前者国内直连超时，后者有 12 小时缓存，会让群里的图延迟一天才更新。
+- 加速镜像都是免费公共服务，哪天某个慢或挂了，把 `gh-proxy.com` 换成 `ghfast.top` 即可，两个随便切。
+- `api.json` 里 `url` / `image` / `imgurl` / `pic` 是主地址，`url2` / `imgurl2` 是备用镜像地址。
 - Actions 的定时任务在高峰期可能延迟几分钟到半小时，做不到秒级准点。
 - 站点每天大约早上 6~7 点更新内容，若某天跑出来是前一天的（`"stale": true`），08:30 那次会自动补正。
 
