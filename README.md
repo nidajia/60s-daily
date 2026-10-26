@@ -12,6 +12,66 @@
 - `60s.png` —— 当天日报长图
 - `api.json` —— 返回图片地址和新闻文字的接口
 
+## 内容改造：热搜换成财经和 AI
+
+原站 `#lylme main` 下共 5 个板块：60秒新闻 / 实时热搜 / 历史上的今天 / 今日黄历 / 每日一语。
+
+`shot.js` 在截图前用 JS 把「实时热搜」整块删掉，然后克隆第一个板块当样式模板，插入五个新板块，所以字体、缩进、编号跟原站完全一致：
+
+| 板块 | 数据源 | 条数 | 说明 |
+| --- | --- | --- | --- |
+| 「财经 · 股市」 | 华尔街见闻 A股频道快讯 API | 8 | 盘中异动、融资、大宗 |
+| 「AI · 科技」 | IT之家 RSS | 8 | 芯片/半导体/机器人/算力，按关键词筛 |
+| 「AI 圈大事」 | 量子位 RSS + 爱范儿 RSS | 9 | 国内 AI 行业与产品动态，中文原生 |
+| 「海外 AI 动态」 | TechCrunch AI + The Verge AI | 8 | 国际模型与产品，**自动译成中文** |
+| 「本周热门开源项目」 | GitHub 搜索 API（近 7 天新建、按星标排序） | 10 | 带【分类】标签和 ★星标数，可直接挑来试，**描述自动译成中文** |
+
+改完图片高度约 6700px（原站带热搜时是 8284px）。
+
+想调整的话改 `shot.js` 顶部常量：
+
+```js
+const FIN_LIMIT   = 8;   // 财经
+const TECH_ITHOME = 8;   // AI·科技（IT之家）
+const TECH_QBT    = 6;   // AI 圈大事（量子位）
+const TECH_IFANR  = 3;   // AI 圈大事（爱范儿补充）
+const GLOBAL_LIMIT= 8;   // 海外 AI 动态
+const GH_LIMIT    = 10;  // 本周热门开源项目
+```
+
+### 「本周热门开源项目」是怎么筛的
+
+用 GitHub 搜索接口取 `created:>7天前` 的仓库，按星标降序，再做四道过滤：
+
+1. `GH_BAD` 剔除 awesome 列表、课程、破解/越狱、漏洞利用 PoC、破限镜像这类仓库；
+2. 描述少于 18 字符的丢掉（没有描述的没法判断用途）；
+3. `GH_BUCKETS` 按描述关键词打类别标签，**同一类别最多 2 条**——否则某天爆出一个热点，一整屏全是同类项目（比如安卓电视去广告）；
+4. 描述先整段翻译、再按中文标点截断，所以在英文上截不会撞坏 `.sql` 这种点号。
+
+Workflow 里把它接到了 `secrets.GITHUB_TOKEN`，搜索接口限速从 10 次/分提到 30 次/分。
+
+几条实现上的坑，改数据源时注意：
+
+- RSS 里 `<channel>` 自己也有 `<title>`，全局正则抓 title 会把频道名混进列表。`rssTitles()` 是按 `<item>` / `<entry>` 逐块取的，别改回去。
+- TechCrunch 的标题带 emoji，而 Actions 里只装了 `fonts-noto-cjk`、没有 emoji 字体，emoji 会渲染成方块，所以统一用 `stripEmoji()` 清掉。
+- IT之家 是综合科技源，`TECH_KEY` 挑关键词命中，`TECH_SKIP` 剔除售价/刷机这类导购消息。
+- 量子位 有会议 PR 稿（前瞻/分论坛/直播），用 `QBT_SKIP` 剔掉。
+- 爱范儿 是综合科技媒体，`IFANR_AI` 只留 AI 浓度高的稿子，`IFANR_SKIP` 去掉早报和导购。
+- 任何一个源挂掉都不会中断截图，对应板块显示「（今日该板块数据源暂不可用）」。
+
+### 海外条目的自动翻译
+
+两个英文板块在出图前会被翻成中文，逻辑在 `translateList()`：
+
+1. 先探测 Google 免费端点（`translate.googleapis.com`）是否可达——通就用它，质量最好；
+2. 不通或失败则降到 MyMemory（国内可直连）；
+3. 两个都失败就**保留英文原句**，绝不把接口报错文本混进版面；
+4. 译完统一走 `tidyZh()`：收敛标点间距、`$ T` → `万亿美元`、把误音译的 `格罗克` 还原成 `Grok`。
+
+判据是「返回文本里必须含汉字」，所以任何源返回限额警告都会被判失败并换下一个源。新增语种或换源时守住这条即可。
+
+机器翻译在满屏产品名的短标题上（比如 `Mercury 3, MiniMax Flash 3.1, Exa 3`）译不出什么，那种条目本就是产品名清单，保留原文反而清楚。
+
 ## 部署（3 步）
 
 ### 1. 建一个公开仓库
@@ -59,13 +119,21 @@ GitHub → New repository → 名称随意（例如 `60s-daily`）→ 选 **Publ
 ```json
 {
   "date": "2026-10-26",
-  "url": "https://raw.githubusercontent.com/.../60s.png",
+  "url": "https://gh-proxy.com/https://raw.githubusercontent.com/.../60s.png",
+  "url2": "https://ghfast.top/https://raw.githubusercontent.com/.../60s.png",
   "width": 1400,
-  "height": 8366,
+  "height": 6790,
   "stale": false,
-  "news": ["1、…", "2、…"]
+  "news": ["1、…", "2、…"],
+  "finance": ["上海钢联发布数据显示…", "银行股震荡拉升…"],
+  "tech": ["英伟达下调 Rubin GPU 系统 HBM 带宽…", "丰田发力人形机器人…"],
+  "aiNews": ["实测 Kimi K3.1 Pro，国模终于继续卷旗舰…"],
+  "aiGlobal": ["Grok发布其人工智能生成的“奥德赛”的前七分钟…"],
+  "ghTrending": ["【实用工具】pengchujin/aerial-tv ★5.2k — 给国产电视的一块干净桌面…"]
 }
 ```
+
+六个文字数组（`news` / `finance` / `tech` / `aiNews` / `aiGlobal` / `ghTrending`）跟图里的板块一一对应，方便插件直接拼文字消息，不一定要发图。海外板块的数组里已经是中文了。
 
 ## 注意事项
 
