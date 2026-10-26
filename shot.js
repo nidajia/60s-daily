@@ -12,8 +12,13 @@ const path = require('path');
 const REPO = process.env.REPO || 'owner/repo';
 const OUT_DIR = process.env.OUT_DIR || __dirname;
 
-const IMG_RAW = `https://raw.githubusercontent.com/${REPO}/main/60s.png`;
+const RAW = `https://raw.githubusercontent.com/${REPO}/main`;
+// 国内直连 raw.githubusercontent.com 不通，统一走加速镜像
+// gh-proxy.com 缓存 60 秒、ghfast.top 缓存 5 分钟，都能保证当天出图
+const IMG_MAIN = `https://gh-proxy.com/${RAW}/60s.png`;
+const IMG_BAK = `https://ghfast.top/${RAW}/60s.png`;
 const IMG_CDN = `https://cdn.jsdelivr.net/gh/${REPO}@main/60s.png`;
+const API_SELF = `https://gh-proxy.com/${RAW}/api.json`;
 
 function todayCN() {
   return new Intl.DateTimeFormat('en-CA', {
@@ -81,11 +86,14 @@ function todayCN() {
     title: '60秒读懂世界',
     source: 'https://60s.timeand.cn/',
     stale,
-    url: IMG_RAW,
-    image: IMG_RAW,
-    imgurl: IMG_RAW,
-    pic: IMG_RAW,
+    url: IMG_MAIN,
+    image: IMG_MAIN,
+    imgurl: IMG_MAIN,
+    pic: IMG_MAIN,
+    url2: IMG_BAK,
+    imgurl2: IMG_BAK,
     cdn: IMG_CDN,
+    api: API_SELF,
     width: Math.round(box.width * 2),
     height: Math.round(box.height * 2),
     news,
