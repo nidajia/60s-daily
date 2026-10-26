@@ -1,19 +1,24 @@
 {
   "date": "2026-10-26",
-  "updated_at": "2026-10-26T05:41:17.829Z",
+  "updated_at": "2026-10-26T06:03:28.479Z",
   "title": "60秒读懂世界",
   "source": "https://60s.timeand.cn/",
   "stale": false,
-  "url": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "image": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "imgurl": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "pic": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "url2": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "imgurl2": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
-  "cdn": "https://cdn.jsdelivr.net/gh/nidajia/60s-daily@main/60s.png",
-  "api": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json",
+  "url": "https://nidajia.github.io/60s-daily/60s.png",
+  "image": "https://nidajia.github.io/60s-daily/60s.png",
+  "imgurl": "https://nidajia.github.io/60s-daily/60s.png",
+  "pic": "https://nidajia.github.io/60s-daily/60s.png",
+  "url2": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "imgurl2": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "url3": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "imgurl3": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
+  "cdn": "https://gcore.jsdelivr.net/gh/nidajia/60s-daily@main/60s.png",
+  "api": "https://nidajia.github.io/60s-daily/api.json",
+  "api2": "https://gh-proxy.com/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json",
+  "api3": "https://ghfast.top/https://raw.githubusercontent.com/nidajia/60s-daily/main/api.json",
+  "raw": "https://raw.githubusercontent.com/nidajia/60s-daily/main/60s.png",
   "width": 1400,
-  "height": 7860,
+  "height": 7908,
   "news": [
     "1、于蕾出任2027羊年央视春晚总导演，连续第五年执导春晚",
     "2、亚洲最长地铁环线武汉12号线即将全线开通：没有传统终点站，坐一圈96分钟，同站进出只需2元",
@@ -32,25 +37,25 @@
     "15、法国数十万人参与新一轮游行，当天有约1000人被捕"
   ],
   "finance": [
+    "整点回顾：市场午后震荡回升，沪指拉升翻红，深成指、创业板指跌幅收窄，机器人概念股持续活跃，上纬新材等多股涨停，油气股集体拉升，中国石油涨近4%，创2008年5月以来新高…",
+    "智能驾驶概念异动拉升，金溢科技直线涨停，万集科技、高新兴、锐明技术、兴民智通等纷纷冲高。",
+    "“相关部门已经在推动车辆安装C-V2X（蜂窝车联网）的强标制定工作。相关工作组已经成立，有几十家单位已经参与进来了。”日前，一位不愿透露姓名的C-V2X领域从业者透露了上述信息…",
+    "根据OpenRouter最新数据测算，上周（10月19日至25日）全球AI大模型总调用量为188万亿Token，环比增长14.63%。 其中，上榜的AI大模型中…",
     "中国石油午后涨近4%，创2008年5月以来新高。",
     "恒生科技指数午后转涨，美团涨4%，网易涨2%。",
     "创新药概念探底回升，莱美药业涨超15%，百洋医药、近岸蛋白涨超10%，我武生物、百诚医药、丽珠集团等跟涨。",
-    "沪指午后拉升翻红，深成指、创业板指跌幅收窄，游戏、油气、白酒、食品、医药医疗等方向涨幅居前，沪深京三市上涨个股近3000只。",
-    "近期，中国科学院云南天文台团队联合国内外合作者，在超快自转近地小行星观测研究方面取得突破性进展，确认已知自转最快的近地小行星。相关研究结果已发表在国际天文期刊《天文学杂志》…",
-    "科伦药业：子公司在 2026 年欧洲肿瘤内科学会大会上公布多项创新药物研究成果，两项芦康沙妥珠单抗(sac-TMT)研究入选最新突破性摘要(LBA)口头报告。",
-    "据国家统计局数据，1-9月，限额以上单位通讯器材类零售额8123亿元，同比增长18.1%，其中9月单月同比增长31.1%，增速在16类商品中继续位居第一，为去年6月以来最高水平…",
-    "近日，小鹏集团获批广州市智能网联汽车应用示范运营资格，可在广州全域开展L4级Robotaxi示范运营。小鹏Robotaxi业务负责人表示，当前团队将持续推进运营能力验证与用户体验优化…"
+    "沪指午后拉升翻红，深成指、创业板指跌幅收窄，游戏、油气、白酒、食品、医药医疗等方向涨幅居前，沪深京三市上涨个股近3000只。"
   ],
   "crypto": [
-    "行情：BTC $80,174（-0.6%） · ETH $2,323（-1.4%）",
+    "行情：BTC $80,209（-0.4%） · ETH $2,325（-1.0%）",
     "【The Block】CoinDCX确认退休钱包的1600万美元损失，此前几天，首席执行官称违规报告为“虚假警报”",
-    "【Cointelegraph】香港将纳斯达克上市公司Solana列为战略企业",
+    "【Cointelegraph】以下是今天加密货币发生的事情",
     "【Decrypt】富国银行、思科、Intuit与另外6家反对代币化股票的公司",
     "【The Block】Keystone客户表示，硬件钱包制造商承诺删除的数据泄露",
-    "【Decrypt】尽管周末下滑，比特币ETF仍连续两周大跌",
-    "【The Block】加密多头在四个小时内失去了4.04亿美元，因为比特币短暂下滑到8万美元以下",
-    "【Cointelegraph】渣打银行领导的Anchorpoint表示，它并不急于零售稳定币",
-    "【Decrypt】香港最大的银行在300万个钱包中放入稳定币"
+    "【Cointelegraph】Hong Kong names Nasdaq-listed Solana Company a strategic enterprise",
+    "【Decrypt】Bitcoin ETFs Snap Two-Week Losing Streak Despite Late-Week Slide",
+    "【The Block】Crypto longs lose $404 million in four hours as bitcoin briefly slips below…",
+    "【Decrypt】Hong Kong’s Biggest Bank Puts a Stablecoin in 3 Million Wallets"
   ],
   "tech": [
     "英伟达下调 Rubin GPU 系统 HBM 与 NVLink 带宽，网络带宽提升",
@@ -60,12 +65,12 @@
     "英伟达瞄准 AI 软件订阅收入，黄仁勋提出每块 GPU 每年约 2000 美元"
   ],
   "aiNews": [
-    "又一国产决策模型发布！准确率超过微软和Jev等决策模型",
-    "特斯拉利润腰斩，一夜跌没“通用汽车”！马斯克：FSD在中国也会遥遥领先",
-    "既能“做选择题”，也能“做填空题”——星辰意图理解模型Xing4.0-29B-Intent发布",
-    "谁在给OpenAI供应具身数据？",
-    "多智能体协同重构医疗AI！清华AIR孵化：医生AI分身“坐诊”医院",
-    "LeCun押注的世界模型，中国一家清华系公司已经做进了机器人",
+    "科大讯飞首发星辰TaaS平台，让Token真正成为千行百业的生产力",
+    "企业AI需要两个世界模型",
+    "一张5090跑起34B实时世界模型，国产玩家拿下英伟达大奖！",
+    "国产5B生图模型海外突然爆火，4天超百万下载",
+    "南京物理AI上大分！三位图灵奖得主发声，50个应用场景亮相",
+    "iRTE2026：声网CEO赵斌提出五级对话能力框架，实时互动迈入对话 AGI 时代",
     "一位开发者让电视服用了 Claude，这是它系统发生的变化",
     "实测 Kimi K3.1 Pro，国模终于继续卷旗舰",
     "OpenAI 发现 PHP「世纪漏洞」，全球 70% 网站都危险了"
@@ -78,17 +83,17 @@
     "Block的新声音模型听起来很人性化",
     "被迫选择，Grok的人工智能模型选择了共和党人。OpenAI挑选民主党人。",
     "以下是可以存在于您的短信中的顶级AI代理",
-    "OpenAI表示，它将不再在实时互联网上训练其人工智能模型…"
+    "OpenAI says it will no longer train its AI models on the live internet…"
   ],
   "military": [
-    "【路透社】阿尔及利亚自1973年以来首次向尼日尔派遣部队",
+    "【路透社】油价从近六个月高位下跌，因伊朗战争敌对行动有望缓解",
     "【防务新闻】彼得雷乌斯说，美国军方需要“紧急的革命性制度变革”来为现代战争做准备",
     "【战区】General Atomics FQ-42 CCA无人机生产将由波音子公司推动",
     "【半岛电视台】美国军方称帮助海湾国家出口15亿桶石油",
-    "【路透社】油价从近六个月高位下跌，因伊朗战争敌对行动有望缓解",
+    "【路透社】阿尔及利亚自1973年以来首次向尼日尔派遣部队",
     "【防务新闻】“西方无法阻止我”：随着俄罗斯跟踪与乌克兰有关的美国卫星，太空战争升温",
-    "【战区】丹麦购买Anthem弹药，联合打击导弹进行双远程打击",
-    "【半岛电视台】伊朗战争现场：沙特、巴基斯坦和土耳其国防官员将抵达德黑兰"
+    "【战区】Denmark To Buy Anthem Munitions…",
+    "【半岛电视台】Iran war live: Saudi, Pakistani and Turkish defence officials due in Tehran"
   ],
   "ghTrending": [
     "【实用工具】pengchujin/aerial-tv ★5.3k — 给国产电视的一块干净桌面：参照 tvOS 设计的开源 Android TV 桌面，没有广告，开机自动接管…",
@@ -96,10 +101,10 @@
     "【Agent】Jakeschincariol/day-trader-skill ★1.7k — 11日内交易的Claude技能：扫描数千张图表，跟踪突发新闻，每次进出时间…",
     "【模型推理】colinhacks/reylo ★1.3k — 将.sql文件导入到具有完整类型推断和零代码的TypeScript中。",
     "【实用工具】rddmwmddr/android-ad-cleaner ★1.1k — 关掉国产安卓手机系统里的广告、热搜、资讯推荐和营销推送。不 root，可还原，支持 AI 智能体一键执行。",
-    "【模型推理】eagle-hq/EAGLE-4 ★993 — EAGLE-4的官方推理代码",
-    "【其他】lyramakesmusic/neuron-explorer ★858 — Qwen3.5-4B的Steering-first neuron explorer：推送每个MLP神经元，保留每次推出…",
-    "【Agent】morganlinton/BeautifulRust ★854 — Claude Code插件，教Claude编写习惯用法、强健的Rust",
-    "【其他】mizorewww/gdirect ★618 — 使用固定libaria2的Rust Google Drive直接下载器",
-    "【开发工具】raymondchins/Bridgeplay ★513 — NotProton免费分支：Mac Steam中的Windows Steam游戏…"
+    "【模型推理】eagle-hq/EAGLE-4 ★994 — EAGLE-4的官方推理代码",
+    "【其他】lyramakesmusic/neuron-explorer ★878 — Qwen3.5-4B的Steering-first neuron explorer：推送每个MLP神经元，保留每次推出…",
+    "【Agent】morganlinton/BeautifulRust ★866 — A Claude Code plugin that teaches Claude to write idiomatic…",
+    "【其他】mizorewww/gdirect ★622 — Rust Google Drive direct downloader using pinned libaria2",
+    "【开发工具】raymondchins/Bridgeplay ★515 — Free fork of NotProton: Windows Steam games in Mac Steam…"
   ]
 }
