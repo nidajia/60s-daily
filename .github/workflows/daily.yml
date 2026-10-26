@@ -44,6 +44,8 @@ jobs:
       - name: 截图并生成 api.json
         env:
           REPO: ${{ github.repository }}
+          # 带 token 调 GitHub 搜索接口，限速从 10 次/分提到 30 次/分
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node shot.js
 
       - name: 提交更新
