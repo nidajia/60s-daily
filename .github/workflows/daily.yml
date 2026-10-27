@@ -7,9 +7,15 @@ on:
       - 'shot.js'
       - '.github/workflows/daily.yml'
   schedule:
-    # GitHub 用 UTC 时间，北京时间 = UTC+8
-    - cron: '30 23 * * *'   # 北京 07:30
-    - cron: '30 0 * * *'    # 北京 08:30（兜底，防止站点更新延迟）
+    # GitHub 用 UTC，北京时间 = UTC+8。
+    # 注意：cron 是「尽力而为」——高负载时会延迟甚至直接丢弃，不会补跑。
+    # 所以这里铺了 5 个时间点，且故意错开整点（整点是全球最拥堵的时刻）。
+    # 配合下面「今天是否已生成」那一步做幂等：当天第一次成功后，后续点位秒退。
+    - cron: '5 23 * * *'    # 北京 07:05
+    - cron: '40 23 * * *'   # 北京 07:40
+    - cron: '15 0 * * *'    # 北京 08:15
+    - cron: '45 0 * * *'    # 北京 08:45
+    - cron: '20 1 * * *'    # 北京 09:20（最后兜底，赶在 9:30 发群之前）
   workflow_dispatch:        # 支持手动点一下运行
 
 permissions:
@@ -26,22 +32,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 幂等闸门：当天已经生成过「新鲜」的图就立刻收工，避免 5 个时间点重复跑
+      # 手动触发（workflow_dispatch）无条件执行，方便随时补一天
+      - name: 今天是否已生成
+        id: gate
+        run: |
+          TODAY=$(date -u -d '+8 hours' +%F)
+          echo "今天(北京)=$TODAY"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "手动触发，无条件执行"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          set +e
+          INFO=$(curl -fsS -m 20 "https://raw.githubusercontent.com/${{ github.repository }}/main/api.json" \
+                 | python3 -c "import sys,json;d=json.load(sys.stdin);print(d.get('date',''), str(d.get('stale')).lower())" 2>/dev/null)
+          set -e
+          echo "线上状态：$INFO"
+          HAVE_DATE=$(echo "$INFO" | awk '{print $1}')
+          HAVE_STALE=$(echo "$INFO" | awk '{print $2}')
+          if [ "$HAVE_DATE" = "$TODAY" ] && [ "$HAVE_STALE" = "false" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "✅ 今天($TODAY)的图已经生成且内容新鲜，跳过"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "需要生成：线上=$HAVE_DATE stale=$HAVE_STALE"
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.gate.outputs.skip != 'true'
         with:
           node-version: '20'
 
       - name: 安装中文字体
+        if: steps.gate.outputs.skip != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-cjk
 
       - name: 安装 Playwright
+        if: steps.gate.outputs.skip != 'true'
         run: |
           npm init -y > /dev/null 2>&1
           npm i playwright
           npx playwright install --with-deps chromium
 
       - name: 截图并生成 api.json
+        if: steps.gate.outputs.skip != 'true'
         env:
           REPO: ${{ github.repository }}
           # 带 token 调 GitHub 搜索接口，限速从 10 次/分提到 30 次/分
@@ -49,6 +86,7 @@ jobs:
         run: node shot.js
 
       - name: 提交更新
+        if: steps.gate.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
