@@ -7,17 +7,18 @@ on:
       - 'shot.js'
       - '.github/workflows/daily.yml'
   schedule:
-    # GitHub 的 cron 是「尽力而为」：高负载时会延迟甚至直接丢弃，而且不补跑。
-    # 2026-10-27 就出现过两个点位全部静默丢失、9:30 发群还拿到前一天图的事故。
-    # 对策：从 06:40 到 09:10 每 30 分钟一个点位，共 6 次；故意错开整点（整点最拥堵）。
-    # 配合下面「今天是否已生成」闸门做幂等：当天第一次成功后，其余点位 8 秒内秒退。
-    - cron: '40 22 * * *'   # 北京 06:40
-    - cron: '10 23 * * *'   # 北京 07:10
-    - cron: '40 23 * * *'   # 北京 07:40
-    - cron: '10 0 * * *'    # 北京 08:10
-    - cron: '40 0 * * *'    # 北京 08:40
-    - cron: '10 1 * * *'    # 北京 09:10（最后兜底，赶在 9:30 发群之前）
-  workflow_dispatch:        # 支持手动点一下运行
+    # 【第三道兜底】GitHub 自己的 cron 在本仓库实测不可靠：
+    #   11-11 / 11-12 六个点位全部延迟 3.5~7 小时；11-13 六个点位连排队都没有，直接丢弃。
+    # 所以主触发已经交给云端定时器（见 CLOUD_CRON.md），这里只保留 3 个点位当免费兜底。
+    - cron: '0 23 * * *'    # 北京 07:00
+    - cron: '0 0 * * *'     # 北京 08:00
+    - cron: '0 1 * * *'     # 北京 09:00
+  workflow_dispatch:        # 手动 / 云端定时器都是走这个口子（即时执行，不排队）
+    inputs:
+      force:
+        description: '强制重新生成（忽略「今天已生成」检查）'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -33,16 +34,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 幂等闸门：当天已经生成过「新鲜」的图就立刻收工，避免 5 个时间点重复跑
-      # 手动触发（workflow_dispatch）无条件执行，方便随时补一天
+      # 幂等闸门：当天已经生成过「新鲜」的图就立刻收工（只花 8 秒）
+      # 云端定时器每 10 分钟打一次这个 workflow，全靠这道闸门把重复触发挡掉。
+      # 只有显式勾了 force=true（手动 / 云端带参）才无条件重跑。
       - name: 今天是否已生成
         id: gate
         run: |
           TODAY=$(date -u -d '+8 hours' +%F)
-          echo "今天(北京)=$TODAY"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "手动触发，无条件执行"
+          echo "今天(北京)=$TODAY  触发方式=${{ github.event_name }}  force=${{ github.event.inputs.force }}"
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            echo "强制重跑，跳过新鲜度检查"
             echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # 生成窗口：北京 05:30 ~ 11:00。
+          # 云端定时器是全天每 10 分钟打一次，凌晨触发时源站还没更新当天内容，
+          # 跑出来只会是一张"未更新"的图，所以窗口外一律跳过（要补图就勾 force）。
+          # 用 UTC+8 换算，不写 TZ=Asia/Shanghai —— 精简镜像里可能没有 tzdata，
+          # 那样 TZ 会静默失效、拿到 UTC 时间，判断就全错了。
+          HM=$(date -u -d '+8 hours' +%H%M)
+          HM=$((10#$HM))          # 去掉前导零，否则 0805 会被当成八进制报错
+          if [ "$HM" -lt 530 ] || [ "$HM" -gt 1100 ]; then
+            echo "⏰ 当前北京 $HM，不在生成窗口（05:30~11:00），跳过"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           set +e

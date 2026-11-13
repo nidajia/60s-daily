@@ -238,7 +238,7 @@ GitHub 官方对 schedule 的说明是 best-effort：高峰期会延迟，甚至
 2. 11-13 当天 6 个点位**连"排队"都没有**（`status=queued` 查询返回 0 条），属于直接丢弃。所以行为在"延迟"和"丢弃"之间摇摆，靠加密点位解决不了。
 3. **`workflow_dispatch`（接口触发）是即时执行的**，不经过定时队列：10:02 触发，10:03 就完成出图。这是唯一可靠的通道。
 
-**最终方案：把"叫醒"这件事从 GitHub 挪到本机**
+**方案 A：本机计划任务（不依赖任何第三方账号）**
 
 - `local_trigger.py`：读 `token.txt`，比对线上 `api.json` 的 `date` 与北京今天，不一致就调 `workflow_dispatch` 触发。
   - `--check` 只检查不触发；`--force` 强制触发一次。
@@ -248,9 +248,28 @@ GitHub 官方对 schedule 的说明是 best-effort：高峰期会延迟，甚至
   - `Daily60sReport_Logon` 每次开机登录时检查（补上 08:20 时电脑还没开的情况）
 - GitHub 那边的 6 个 cron 点位保留，作为第三层兜底；因为幂等闸门的存在，它们即便延迟到下午跑，也只花 8 秒就跳过，不浪费。
 
-**前提与边界**：本机方案要求电脑在早上 8~9 点间开机（或当天登录过）。如果电脑长期不开机，就得改用云端定时器（如 cron-job.org）替代 `install_task.bat`，原理相同：定时对 `POST /repos/nidajia/60s-daily/actions/workflows/396559235/dispatches` 发一次请求。
+**前提与边界**：本机方案要求电脑在早上 8~9 点间开机（或当天登录过）。如果电脑长期不开机，就得改用云端定时器（见方案 B）。
 
 **安全注意**：`token.txt` 存的是 GitHub token，已加入 `.gitignore`，不要提交。建议使用 fine-grained token，只授予该仓库 `Actions: Read and write` 权限。
+
+---
+
+## 方案 B：云端定时器（推荐，不依赖电脑开机）
+
+云端定时器在外面每隔 10 分钟对「立即执行」接口发一次 POST，workflow 里的闸门负责去重，
+一天只有第一次真正干活，其余 8 秒秒退。
+
+- 配置步骤：见 [CLOUD_CRON.md](CLOUD_CRON.md)（cron-job.org，三步，约 5 分钟）
+- 备选：`cloudflare_worker.js` + Cloudflare Workers Cron（token 存加密变量，更稳更安全）
+- workflow 里新增**生成窗口**（北京 05:30~11:00）：窗口外一律跳过，避免凌晨触发时源站还没更新、跑出一张"未更新"的图。要强行补图就勾 `force`。
+
+三层触发同时存在也不冲突（`concurrency: daily-60s` 保证串行，闸门保证幂等）：
+
+| 层级 | 触发方式 | 可靠性 |
+| --- | --- | --- |
+| 主 | 云端定时器 → `workflow_dispatch` | 高（即时执行，不排队） |
+| 备 | 本机计划任务（方案 A） | 中（需电脑开机） |
+| 兜底 | GitHub 自带 cron（07:00/08:00/09:00） | 低（会延迟或丢弃，但免费） |
 
 
 
