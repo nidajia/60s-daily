@@ -1,5 +1,17 @@
 # 云端定时：让日报每天准时更新
 
+> **当前状态：已配置完成（2026-11-13 11:10）**
+>
+> | 项目 | 值 |
+> | --- | --- |
+> | 平台 | cron-job.org，任务 ID `8854270`，标题「60s日报」，已启用 |
+> | 调度 | 北京 05:00–10:59，每 15 分钟（crontab `*/15 5-10 * * *`，时区 Asia/Shanghai） |
+> | 请求 | `POST` + 4 个 header + body `{"ref":"main"}`，已用 IMPORT FROM CURL 导入 |
+> | 凭据 | classic token「60s-daily-cron」，scope 仅 `repo, workflow`，**无过期** |
+> | 实测 | TEST RUN 返回 `204 No Content / 1.17s`，对应 Actions run #116 |
+>
+> 下面保留完整配置步骤，换平台或重建任务时照做即可。
+
 ## 为什么需要这一步
 
 GitHub 自带的定时器（`schedule`）是"尽力而为"的，实测在你这个仓库上：
