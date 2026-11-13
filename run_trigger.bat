@@ -1,5 +1,5 @@
 @echo off
-rem ä¾› Windows è®¡åˆ’ä»»åŠ¡è°ƒç”¨ï¼šé™é»˜è¿è¡Œæœ¬åœ°è§¦å‘å™¨ï¼ˆä¸å¼¹é»‘çª—ï¼‰
+rem ¹© Windows ¼Æ»®ÈÎÎñµ÷ÓÃ£º¾²Ä¬ÔËĞĞ±¾µØ´¥·¢Æ÷£¨²»µ¯ºÚ´°£©
 setlocal
 set "PY=C:\Users\nidajia\AppData\Local\Programs\Python\Python312\pythonw.exe"
 set "SCRIPT=C:\Users\nidajia\WorkBuddy\2026-10-26-02-34-00\60s-api\local_trigger.py"

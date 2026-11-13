@@ -1,10 +1,9 @@
 @echo off
-chcp 65001 >nul
 cd /d "%~dp0"
 python check_urls.py
 if errorlevel 1 (
   echo.
-  echo 娌℃娴嬪埌 python锛岃瘯璇曞湪鍛戒护鎻愮ず绗﹂噷杩愯锛歱y check_urls.py
+  echo 没检测到 python，试试在命令提示符里运行：py check_urls.py
 )
 echo.
 pause
