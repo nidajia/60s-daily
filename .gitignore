@@ -1,0 +1,5 @@
+# 本地凭据与运行产物，绝不入库
+token.txt
+trigger.log
+node_modules/
+package-lock.json
